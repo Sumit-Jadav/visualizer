@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reverse Nodes in k-Group — Visualizer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="scanlines" aria-hidden="true"></div>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <span class="brand-dot"></span>
+      <span class="brand-name">reverseKGroup</span>
+      <span class="brand-tag">memory view</span>
+    </div>
+    <div class="complexity">
+      <span><em>O(n)</em> time</span>
+      <span class="sep">·</span>
+      <span><em>O(1)</em> space</span>
+    </div>
+  </div>
+</header>
+
+<main class="layout">
+
+  <section class="intro">
+    <p class="eyebrow">LeetCode 25</p>
+    <h1>Reverse nodes, k at a time.</h1>
+    <p class="lede">Every value below is a live memory slot. Every pill is a pointer that actually points somewhere. Step through the algorithm and watch <code>prevGroup</code>, <code>kth</code>, <code>temp</code> and <code>prev</code> rewire the list one link at a time.</p>
+  </section>
+
+  <section class="controls-bar" aria-label="Input controls">
+    <div class="field">
+      <label for="arrInput">list</label>
+      <input id="arrInput" type="text" value="1,2,3,4,5,6,7,8" spellcheck="false" autocomplete="off">
+    </div>
+    <div class="field field-k">
+      <label for="kInput">k</label>
+      <input id="kInput" type="number" value="3" min="1" max="10">
+    </div>
+    <button id="generateBtn" class="btn btn-primary">rebuild</button>
+    <div class="presets">
+      <button class="chip" data-list="1,2,3,4,5,6,7,8" data-k="3">even split</button>
+      <button class="chip" data-list="1,2,3,4,5,6,7" data-k="3">leftover tail</button>
+      <button class="chip" data-list="1,2,3,4,5" data-k="1">k = 1 (no-op)</button>
+      <button class="chip" data-list="1,2,3,4,5,6" data-k="6">k = length</button>
+    </div>
+  </section>
+
+  <section class="stage" aria-label="Linked list visualization">
+    <div class="stage-scroll">
+      <svg id="listSvg" viewBox="0 0 900 190" role="img"><title>Linked list pointer state</title></svg>
+    </div>
+  </section>
+
+  <section class="transport" aria-label="Step controls">
+    <button id="prevBtn" class="btn btn-ghost" aria-label="Previous step">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8L10 13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      prev
+    </button>
+    <div class="transport-mid">
+      <span id="stepCounter" class="step-counter">step 1 / 1</span>
+      <div class="progress-track"><div id="progressFill" class="progress-fill"></div></div>
+    </div>
+    <button id="nextBtn" class="btn btn-ghost" aria-label="Next step">
+      next
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3L11 8L6 13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <button id="playBtn" class="btn btn-ghost btn-play" aria-label="Auto-play">
+      <svg id="playIcon" width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M4 2.5L13.5 8L4 13.5V2.5Z"/></svg>
+      <span id="playLabel">play</span>
+    </button>
+  </section>
+
+  <section class="detail-grid">
+    <div class="panel panel-desc">
+      <p class="panel-label">what's happening</p>
+      <p id="descBox" class="desc-text"></p>
+    </div>
+
+    <div class="panel panel-vars">
+      <p class="panel-label">pointers</p>
+      <div id="varsGrid" class="vars-grid"></div>
+    </div>
+
+    <div class="panel panel-code">
+      <p class="panel-label">source — java</p>
+      <pre id="codeBox" class="code-box"></pre>
+    </div>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <p>Built to trace <code>Solution.reverseKGroup</code> exactly — dummy node, k-lookahead, in-place reversal, splice back.</p>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
