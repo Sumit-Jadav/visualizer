@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Reverse Nodes in k-Group — Visualizer (LeetCode 25)</title>
+  <title>Linked List Cycle II — Visualizer (LeetCode 142)</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -18,7 +18,7 @@
     <a href="../../../index.html" class="brand">
       <span class="brand-dot"></span>
       <span class="brand-name">LeetCode Visualizer</span>
-      <span class="brand-tag">LC 25</span>
+      <span class="brand-tag">LC 142</span>
     </a>
     <div class="nav-links">
       <a href="../../../index.html" class="nav-link">← All Problems</a>
@@ -35,39 +35,38 @@
 
   <section class="intro">
     <p class="eyebrow">
-      <span>LeetCode 25</span>
-      <span class="badge-diff badge-hard">Hard</span>
+      <span>LeetCode 142</span>
+      <span class="badge-diff badge-medium">Medium</span>
     </p>
-    <h1>Reverse Nodes in k-Group</h1>
-    <p class="lede">Reverse the nodes of a linked list <code>k</code> at a time and return its modified list. Every group of size <code>k</code> is reversed in-place while keeping any remaining leftover tail intact.</p>
+    <h1>Linked List Cycle II</h1>
+    <p class="lede">Find the <strong>exact node where the cycle begins</strong>. Phase 1: intersect <code>fast</code> & <code>slow</code>. Phase 2: reset <code>entry</code> to head, then advance <code>entry</code> and <code>slow</code> at 1x speed until they meet.</p>
   </section>
 
-  <section class="controls-bar" aria-label="Input controls">
+  <section class="controls-bar">
     <div class="field input-list">
-      <label for="arrInput">List Values</label>
-      <input id="arrInput" type="text" value="1,2,3,4,5,6,7,8" spellcheck="false" autocomplete="off">
+      <label for="arrInput">List Nodes</label>
+      <input id="arrInput" type="text" value="3,2,0,-4" spellcheck="false" autocomplete="off">
     </div>
     <div class="field field-k">
-      <label for="kInput">k</label>
-      <input id="kInput" type="number" value="3" min="1" max="10">
+      <label for="posInput">Cycle Pos</label>
+      <input id="posInput" type="number" value="1" min="-1" max="10">
     </div>
     <button id="generateBtn" class="btn btn-primary">Rebuild</button>
     <div class="presets">
-      <button class="chip" data-list="1,2,3,4,5,6,7,8" data-k="3">Even Split (k = 3)</button>
-      <button class="chip" data-list="1,2,3,4,5,6,7" data-k="3">Leftover Tail (k = 3)</button>
-      <button class="chip" data-list="1,2,3,4,5" data-k="1">k = 1 (No-op)</button>
-      <button class="chip" data-list="1,2,3,4,5,6" data-k="6">k = length</button>
+      <button class="chip" data-list="3,2,0,-4" data-pos="1">Standard (pos = 1, node 2)</button>
+      <button class="chip" data-list="1,2" data-pos="0">Full Loop (pos = 0)</button>
+      <button class="chip" data-list="1,2,3,4,5" data-pos="-1">No Cycle (pos = -1)</button>
     </div>
   </section>
 
-  <section class="stage" aria-label="Linked list visualization">
+  <section class="stage" aria-label="Linked List SVG Visualization">
     <div class="stage-scroll">
-      <svg id="listSvg" class="stage-svg" viewBox="0 0 900 190" role="img"><title>Linked list pointer state</title></svg>
+      <svg id="listSvg" class="stage-svg" viewBox="0 0 900 220" role="img"><title>Linked list cycle II visualizer</title></svg>
     </div>
   </section>
 
-  <section class="transport" aria-label="Step controls">
-    <button id="prevBtn" class="btn btn-ghost" aria-label="Previous step">
+  <section class="transport" aria-label="Playback controls">
+    <button id="prevBtn" class="btn btn-ghost">
       <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8L10 13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
       Prev
     </button>
@@ -75,11 +74,11 @@
       <span id="stepCounter" class="step-counter">Step 1 / 1</span>
       <input id="stepSlider" type="range" class="step-slider" min="0" max="0" value="0">
     </div>
-    <button id="nextBtn" class="btn btn-ghost" aria-label="Next step">
+    <button id="nextBtn" class="btn btn-ghost">
       Next
       <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M6 3L11 8L6 13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
-    <button id="playBtn" class="btn btn-ghost btn-play" aria-label="Auto-play">
+    <button id="playBtn" class="btn btn-ghost btn-play">
       <svg id="playIcon" width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M4 2.5L13.5 8L4 13.5V2.5Z"/></svg>
       <span id="playLabel">Play</span>
     </button>
@@ -109,9 +108,9 @@
       <div class="panel-header">
         <p class="panel-label">Source Code</p>
         <div class="lang-tabs">
-          <button class="lang-tab active" data-lang="java">Java</button>
-          <button class="lang-tab" data-lang="js">JavaScript</button>
+          <button class="lang-tab active" data-lang="js">JavaScript</button>
           <button class="lang-tab" data-lang="py">Python</button>
+          <button class="lang-tab" data-lang="java">Java</button>
           <button class="lang-tab" data-lang="cpp">C++</button>
         </div>
       </div>
@@ -122,7 +121,7 @@
 </main>
 
 <footer class="foot">
-  <span>LeetCode 25 — Reverse Nodes in k-Group Visualizer</span>
+  <span>LeetCode 142 — Linked List Cycle II Visualizer</span>
   <a href="../../../index.html">← Back to Gallery</a>
 </footer>
 

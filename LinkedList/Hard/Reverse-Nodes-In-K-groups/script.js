@@ -1,19 +1,70 @@
-const CODE_LINES = [
-  "ListNode dummy = new ListNode(0);",
-  "dummy.next = head; prevGroup = dummy;",
-  "for (i=0; i<k && kth!=null; i++) kth = kth.next;",
-  "if (kth == null) break;",
-  "ListNode groupNext = kth.next;",
-  "kth.next = null;",
-  "ListNode groupHead = prevGroup.next;",
-  "ListNode newHead = reverse(groupHead);",
-  "  // temp = groupHead, prev = null",
-  "  // temp.next = prev; prev = temp; temp = next;",
-  "prevGroup.next = newHead;",
-  "groupHead.next = groupNext;",
-  "prevGroup = groupHead;",
-  "return dummy.next;"
-];
+const CODE_SNIPPETS = {
+  java: [
+    "ListNode dummy = new ListNode(0);",
+    "dummy.next = head; prevGroup = dummy;",
+    "for (i=0; i<k && kth!=null; i++) kth = kth.next;",
+    "if (kth == null) break;",
+    "ListNode groupNext = kth.next;",
+    "kth.next = null;",
+    "ListNode groupHead = prevGroup.next;",
+    "ListNode newHead = reverse(groupHead);",
+    "  // temp = groupHead, prev = null",
+    "  // temp.next = prev; prev = temp; temp = next;",
+    "prevGroup.next = newHead;",
+    "groupHead.next = groupNext;",
+    "prevGroup = groupHead;",
+    "return dummy.next;"
+  ],
+  js: [
+    "function reverseKGroup(head, k) {",
+    "  let dummy = new ListNode(0); dummy.next = head;",
+    "  let prevGroup = dummy;",
+    "  while (true) {",
+    "    let kth = getKth(prevGroup, k);",
+    "    if (!kth) break;",
+    "    let groupNext = kth.next; kth.next = null;",
+    "    let groupHead = prevGroup.next;",
+    "    let newHead = reverse(groupHead);",
+    "    prevGroup.next = newHead;",
+    "    groupHead.next = groupNext;",
+    "    prevGroup = groupHead;",
+    "  }",
+    "  return dummy.next;",
+    "}"
+  ],
+  py: [
+    "def reverseKGroup(head: Optional[ListNode], k: int) -> Optional[ListNode]:",
+    "    dummy = ListNode(0, head)",
+    "    prevGroup = dummy",
+    "    while True:",
+    "        kth = getKth(prevGroup, k)",
+    "        if not kth: break",
+    "        groupNext = kth.next; kth.next = None",
+    "        groupHead = prevGroup.next",
+    "        newHead = reverse(groupHead)",
+    "        prevGroup.next = newHead",
+    "        groupHead.next = groupNext",
+    "        prevGroup = groupHead",
+    "    return dummy.next"
+  ],
+  cpp: [
+    "ListNode* reverseKGroup(ListNode* head, int k) {",
+    "    ListNode dummy(0); dummy.next = head;",
+    "    ListNode* prevGroup = &dummy;",
+    "    while (true) {",
+    "        ListNode* kth = getKth(prevGroup, k);",
+    "        if (!kth) break;",
+    "        ListNode* groupNext = kth->next; kth->next = nullptr;",
+    "        ListNode* groupHead = prevGroup->next;",
+    "        ListNode* newHead = reverse(groupHead);",
+    "        prevGroup->next = newHead;",
+    "        groupHead->next = groupNext;",
+    "        prevGroup = groupHead;",
+    "    }",
+    "    return dummy.next;",
+    "}"
+  ]
+};
 
 const PTR_COLOR = {
   prevGroup: "var(--coral)",
@@ -22,7 +73,8 @@ const PTR_COLOR = {
   groupHead: "var(--violet)",
   newHead: "var(--mint)",
   temp: "var(--pink)",
-  prev: "var(--sand)"
+  prev: "var(--sand)",
+  head: "var(--mint)"
 };
 
 const PTR_ORDER = ["prevGroup", "kth", "groupNext", "groupHead", "temp", "prev", "newHead"];
@@ -30,159 +82,195 @@ const PTR_ORDER = ["prevGroup", "kth", "groupNext", "groupHead", "temp", "prev",
 let SIM = null;
 let stepIdx = 0;
 let playTimer = null;
+let currentLang = 'java';
 
 function simulate(vals, k) {
   let idc = 0;
-  const nodes = vals.map(v => ({ id: "n" + (idc++), val: v, next: null }));
-  for (let i = 0; i < nodes.length - 1; i++) nodes[i].next = nodes[i + 1];
-  const dummy = { id: "dummy", val: "D", next: nodes[0] || null };
+  const nodes = vals.map(v => ({ id: "n" + (idc++), val: v, mem: "0x" + (170 + idc * 4).toString(16) }));
+  const dummy = { id: "dummy", val: "D", mem: "dummy" };
+
+  const currentLinks = { dummy: nodes[0] ? nodes[0].id : null };
+  for (let i = 0; i < nodes.length - 1; i++) currentLinks[nodes[i].id] = nodes[i + 1].id;
+  if (nodes.length > 0) currentLinks[nodes[nodes.length - 1].id] = null;
+
   const steps = [];
-
-  function links() {
-    const l = { dummy: dummy.next ? dummy.next.id : null };
-    nodes.forEach(n => (l[n.id] = n.next ? n.next.id : null));
-    return l;
-  }
   function snap(desc, ptrs, line) {
-    steps.push({ desc, ptrs: { ...ptrs }, line, links: links() });
+    steps.push({ desc, ptrs: { ...ptrs }, line, links: { ...currentLinks } });
   }
 
-  let prevGroup = dummy;
-  snap("Initialize dummy node ahead of head. prevGroup starts at dummy.", { prevGroup: "dummy" }, 1);
+  let prevGroup = dummy.id;
+  snap("Initialize dummy node ahead of head. prevGroup starts at dummy.", { prevGroup: dummy.id, head: nodes[0] ? nodes[0].id : null }, 1);
 
   while (true) {
     let kth = prevGroup;
-    for (let i = 0; i < k && kth; i++) kth = kth.next;
-    snap(`Walk k = ${k} steps from prevGroup to locate the kth node of this group.`, { prevGroup: prevGroup.id, kth: kth ? kth.id : null }, 2);
+    for (let i = 0; i < k && kth; i++) {
+      kth = currentLinks[kth];
+    }
+    snap(`Walk k = ${k} steps from prevGroup to locate the kth node of this group.`, { prevGroup, kth: kth ? kth : null }, 2);
 
     if (!kth) {
-      snap("Fewer than k nodes remain — stop here, this tail is left unreversed.", { prevGroup: prevGroup.id, kth: null }, 3);
+      snap("Fewer than k nodes remain — stop here, this tail is left unreversed.", { prevGroup, kth: null }, 3);
       break;
     }
 
-    const groupNext = kth.next;
-    snap("Remember groupNext, the first node after this group.", { prevGroup: prevGroup.id, kth: kth.id, groupNext: groupNext ? groupNext.id : null }, 4);
+    const groupNext = currentLinks[kth];
+    snap("Remember groupNext, the first node after this group.", { prevGroup, kth: kth, groupNext: groupNext ? groupNext : null }, 4);
 
-    kth.next = null;
-    snap("Cut kth.next so the group becomes an isolated sub-list.", { prevGroup: prevGroup.id, kth: kth.id, groupNext: groupNext ? groupNext.id : null }, 5);
+    currentLinks[kth] = null;
+    snap("Cut kth.next so the group becomes an isolated sub-list.", { prevGroup, kth: kth, groupNext: groupNext ? groupNext : null }, 5);
 
-    const groupHead = prevGroup.next;
-    snap("groupHead points at the current first node of the group.", { prevGroup: prevGroup.id, kth: kth.id, groupNext: groupNext ? groupNext.id : null, groupHead: groupHead.id }, 6);
+    const groupHead = currentLinks[prevGroup];
+    snap("groupHead points at the current first node of the group.", { prevGroup, kth: kth, groupNext: groupNext ? groupNext : null, groupHead: groupHead }, 6);
 
     let temp = groupHead, prev = null;
-    snap("Begin reversing the isolated group in place.", { prevGroup: prevGroup.id, groupHead: groupHead.id, temp: temp ? temp.id : null, prev: null }, 8);
+    snap("Begin reversing the isolated group in place.", { prevGroup, groupHead, temp: temp ? temp : null, prev: null }, 8);
 
     while (temp) {
-      const nxt = temp.next;
-      temp.next = prev;
+      const nxt = currentLinks[temp];
+      currentLinks[temp] = prev;
       prev = temp;
       temp = nxt;
-      snap("Flip temp.next backward, then advance prev and temp forward.", { prevGroup: prevGroup.id, groupHead: groupHead.id, temp: temp ? temp.id : null, prev: prev ? prev.id : null }, 9);
+      snap("Flip temp.next backward, then advance prev and temp forward.", { prevGroup, groupHead, temp: temp ? temp : null, prev: prev ? prev : null }, 9);
     }
 
     const newHead = prev;
-    snap("Reversal done — newHead is the group's new first node.", { prevGroup: prevGroup.id, groupHead: groupHead.id, newHead: newHead.id }, 7);
+    snap("Reversal done — newHead is the group's new first node.", { prevGroup, groupHead, newHead: newHead }, 7);
 
-    prevGroup.next = newHead;
-    snap("Splice it in: prevGroup.next = newHead.", { prevGroup: prevGroup.id, groupHead: groupHead.id, newHead: newHead.id }, 10);
+    currentLinks[prevGroup] = newHead;
+    snap("Splice it in: prevGroup.next = newHead.", { prevGroup, groupHead, newHead: newHead }, 10);
 
-    groupHead.next = groupNext;
-    snap("groupHead — now the group's tail — reconnects to groupNext.", { prevGroup: prevGroup.id, groupHead: groupHead.id, newHead: newHead.id, groupNext: groupNext ? groupNext.id : null }, 11);
+    currentLinks[groupHead] = groupNext;
+    snap("groupHead — now the group's tail — reconnects to groupNext.", { prevGroup, groupHead, newHead: newHead, groupNext: groupNext ? groupNext : null }, 11);
 
     prevGroup = groupHead;
-    snap("prevGroup advances to groupHead, ready for the next group.", { prevGroup: prevGroup.id }, 12);
+    snap("prevGroup advances to groupHead, ready for the next group.", { prevGroup }, 12);
   }
 
-  snap("All full groups reversed. Return dummy.next.", {}, 13);
-  return { nodes, steps };
+  snap("All full groups reversed. Return dummy.next.", { dummy: dummy.id, head: currentLinks[dummy.id] }, 13);
+  return { nodes, dummy, steps };
+}
+
+function getNodeVal(allNodes, id) {
+  if (!id) return "null";
+  if (id === "dummy") return "D";
+  const nd = allNodes.find(n => n.id === id);
+  return nd ? nd.val : "null";
 }
 
 function boxX(i) { return 130 + i * 100; }
 
-function centerOf(idxOf, id, bw) {
-  if (id === "dummy") return { x: 55, i: -1 };
-  const i = idxOf[id];
-  return { x: boxX(i) + bw / 2, i };
-}
-
 function render() {
   const s = SIM.steps[stepIdx];
+  const allNodes = [SIM.dummy, ...SIM.nodes];
   const idxOf = {};
-  SIM.nodes.forEach((nd, i) => (idxOf[nd.id] = i));
+  allNodes.forEach((nd, i) => (idxOf[nd.id] = i));
+
   const y = 70, bw = 60, bh = 42;
 
-  let svg = `<defs><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>`;
+  let svg = `<defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>`;
 
-  svg += `<rect x="20" y="${y}" width="70" height="${bh}" rx="6" fill="var(--surface-raised)" stroke="var(--border-strong)" stroke-width="1"/>`;
-  svg += `<text x="55" y="${y + bh / 2}" text-anchor="middle" dominant-baseline="central" font-family="JetBrains Mono, monospace" font-size="12" fill="var(--text-muted)">dummy</text>`;
+  // Draw Nodes
+  allNodes.forEach((nd, i) => {
+    const x = boxX(i);
+    const isDummy = nd.id === "dummy";
+    const stroke = isDummy ? "var(--violet)" : "var(--border-strong)";
 
-  SIM.nodes.forEach((nd, i) => {
-    svg += `<rect x="${boxX(i)}" y="${y}" width="${bw}" height="${bh}" rx="6" fill="var(--surface-raised)" stroke="var(--border-strong)" stroke-width="1"/>`;
-    svg += `<text x="${boxX(i) + bw / 2}" y="${y + bh / 2}" text-anchor="middle" dominant-baseline="central" font-family="JetBrains Mono, monospace" font-size="15" font-weight="700" fill="var(--text-primary)">${nd.val}</text>`;
+    svg += `<g>
+      <rect x="${x}" y="${y}" width="${bw}" height="${bh}" rx="6" fill="var(--surface-raised)" stroke="${stroke}" stroke-width="${isDummy ? 1.5 : 1}"/>
+      <text x="${x + bw / 2}" y="${y + bh / 2}" text-anchor="middle" dominant-baseline="central" font-family="JetBrains Mono, monospace" font-size="${isDummy ? 13 : 15}" font-weight="700" fill="${isDummy ? "var(--violet)" : "var(--text-primary)"}">${nd.val}</text>
+      <text x="${x + bw / 2}" y="${y - 8}" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="var(--text-muted)">${nd.mem}</text>
+    </g>`;
   });
 
-  Object.entries(s.links).forEach(([src, tgt]) => {
-    if (tgt === null || tgt === undefined) return;
-    const a = centerOf(idxOf, src, bw);
-    const b = centerOf(idxOf, tgt, bw);
-    if (b.i > a.i) {
-      const x1 = a.i === -1 ? 90 : boxX(a.i) + bw;
-      const x2 = boxX(b.i);
-      svg += `<line x1="${x1}" y1="${y + bh / 2}" x2="${x2 - 4}" y2="${y + bh / 2}" stroke="var(--text-secondary)" stroke-width="1.3" marker-end="url(#arrow)"/>`;
+  // Draw Links
+  Object.entries(s.links).forEach(([srcId, tgtId]) => {
+    if (!tgtId) return;
+    const srcIdx = idxOf[srcId];
+    const tgtIdx = idxOf[tgtId];
+    if (srcIdx === undefined || tgtIdx === undefined) return;
+
+    const x1 = boxX(srcIdx) + bw;
+    const x2 = boxX(tgtIdx);
+
+    if (tgtIdx > srcIdx) {
+      if (tgtIdx === srcIdx + 1) {
+        svg += `<line x1="${x1}" y1="${y + bh / 2}" x2="${x2 - 4}" y2="${y + bh / 2}" stroke="var(--text-secondary)" stroke-width="1.4" marker-end="url(#arrow)"/>`;
+      } else {
+        const midY = y - 28 - (tgtIdx - srcIdx) * 4;
+        svg += `<path d="M ${x1} ${y + 10} Q ${(boxX(srcIdx) + boxX(tgtIdx)) / 2} ${midY} ${x2} ${y + 10}" fill="none" stroke="var(--mint)" stroke-width="1.8" marker-end="url(#arrow)"/>`;
+      }
     } else {
-      const x1 = boxX(a.i) + bw / 2;
-      const x2 = boxX(b.i) + bw / 2;
-      const midY = y - 26 - Math.abs(a.i - b.i) * 3;
-      svg += `<path d="M${x1} ${y} Q ${(x1 + x2) / 2} ${midY} ${x2} ${y - 2}" fill="none" stroke="var(--mint)" stroke-width="1.3" marker-end="url(#arrow)"/>`;
+      const midY = y - 28 - Math.abs(srcIdx - tgtIdx) * 4;
+      svg += `<path d="M ${boxX(srcIdx) + bw / 2} ${y} Q ${(boxX(srcIdx) + boxX(tgtIdx)) / 2} ${midY} ${boxX(tgtIdx) + bw / 2} ${y - 2}" fill="none" stroke="var(--coral)" stroke-width="1.8" marker-end="url(#arrow)"/>`;
     }
   });
 
-  const byNode = {};
-  Object.entries(s.ptrs).forEach(([name, id]) => {
-    if (id === undefined) return;
-    const key = id === null ? "null" : id;
-    (byNode[key] = byNode[key] || []).push(name);
+  // Pointer Badges
+  const ptrsByNode = {};
+  Object.entries(s.ptrs).forEach(([pName, tgtId]) => {
+    const key = tgtId === null ? "null" : tgtId;
+    (ptrsByNode[key] = ptrsByNode[key] || []).push(pName);
   });
 
   let labelSvg = "";
-  Object.entries(byNode).forEach(([id, names]) => {
-    if (id === "null") return;
-    const c = centerOf(idxOf, id, bw);
-    const bx = c.i === -1 ? 55 : boxX(c.i) + bw / 2;
-    names.forEach((nm, j) => {
-      const ly = y + bh + 22 + j * 20;
-      const color = PTR_COLOR[nm] || "var(--text-muted)";
-      const pw = Math.max(58, nm.length * 7 + 16);
-      labelSvg += `<rect x="${bx - pw / 2}" y="${ly - 12}" width="${pw}" height="18" rx="9" fill="${color}" opacity="0.16" stroke="${color}" stroke-width="1"/>`;
-      labelSvg += `<text x="${bx}" y="${ly - 3}" text-anchor="middle" dominant-baseline="central" font-family="JetBrains Mono, monospace" font-size="10.5" font-weight="500" fill="${color}">${nm}</text>`;
+  Object.entries(ptrsByNode).forEach(([tgtId, names]) => {
+    if (tgtId === "null") return;
+    const i = idxOf[tgtId];
+    if (i === undefined) return;
+    const bx = boxX(i) + bw / 2;
+
+    names.forEach((name, j) => {
+      const ly = y + bh + 24 + j * 22;
+      const color = PTR_COLOR[name] || "var(--text-muted)";
+      const pw = Math.max(54, name.length * 8 + 14);
+      labelSvg += `<rect x="${bx - pw / 2}" y="${ly - 10}" width="${pw}" height="18" rx="9" fill="${color}" opacity="0.2" stroke="${color}" stroke-width="1.2"/>`;
+      labelSvg += `<text x="${bx}" y="${ly}" text-anchor="middle" dominant-baseline="central" font-family="JetBrains Mono, monospace" font-size="10.5" font-weight="600" fill="${color}">${name}</text>`;
     });
   });
 
-  const maxLabels = Math.max(1, ...Object.values(byNode).map(a => a.length));
-  const svgHeight = y + bh + 22 + maxLabels * 20 + 12;
+  const maxStack = Math.max(1, ...Object.values(ptrsByNode).map(a => a.length));
+  const svgHeight = y + bh + 24 + maxStack * 22 + 16;
+  const svgWidth = Math.max(880, boxX(allNodes.length) + 60);
 
   const svgEl = document.getElementById("listSvg");
-  svgEl.setAttribute("viewBox", `0 0 ${Math.max(900, boxX(SIM.nodes.length) + 40)} ${svgHeight}`);
+  svgEl.setAttribute("viewBox", `0 0 ${svgWidth} ${svgHeight}`);
   svgEl.innerHTML = svg + labelSvg;
 
+  // Controls & Descriptions
   document.getElementById("descBox").textContent = s.desc;
-  document.getElementById("stepCounter").textContent = `step ${stepIdx + 1} / ${SIM.steps.length}`;
-  document.getElementById("progressFill").style.width = `${((stepIdx + 1) / SIM.steps.length) * 100}%`;
+  document.getElementById("stepCounter").textContent = `Step ${stepIdx + 1} / ${SIM.steps.length}`;
+  const stepSlider = document.getElementById("stepSlider");
+  stepSlider.max = SIM.steps.length - 1;
+  stepSlider.value = stepIdx;
+
   document.getElementById("prevBtn").disabled = stepIdx === 0;
   document.getElementById("nextBtn").disabled = stepIdx === SIM.steps.length - 1;
 
+  // Variable cards
   const varsGrid = document.getElementById("varsGrid");
   varsGrid.innerHTML = "";
   PTR_ORDER.forEach(name => {
     if (!(name in s.ptrs)) return;
     const id = s.ptrs[name];
-    const label = id === null ? "null" : id === "dummy" ? "dummy" : SIM.nodes[idxOf[id]].val;
+    const label = id === null ? "null" : id === "dummy" ? "dummy" : `val: ${getNodeVal(allNodes, id)}`;
     const color = PTR_COLOR[name] || "var(--border-strong)";
-    varsGrid.innerHTML += `<div class="var-card" style="border-left-color:${color}"><div class="var-name">${name}</div><div class="var-val">${label}</div></div>`;
+    varsGrid.innerHTML += `<div class="var-card" style="border-left-color:${color}">
+      <div class="var-name">${name}</div>
+      <div class="var-val">${label}</div>
+    </div>`;
   });
 
-  const codeBox = document.getElementById("codeBox");
-  codeBox.innerHTML = CODE_LINES.map((line, i) => {
+  renderCode();
+}
+
+function renderCode() {
+  const s = SIM.steps[stepIdx];
+  const codeLines = CODE_SNIPPETS[currentLang] || CODE_SNIPPETS.java;
+  document.getElementById("codeBox").innerHTML = codeLines.map((line, i) => {
     const active = i === s.line ? "active" : "";
     return `<div class="code-line ${active}">${line}</div>`;
   }).join("");
@@ -208,28 +296,33 @@ function step(d) {
 }
 
 function stopPlay() {
-  clearInterval(playTimer);
-  playTimer = null;
-  document.getElementById("playLabel").textContent = "play";
+  if (playTimer) { clearInterval(playTimer); playTimer = null; }
+  document.getElementById("playLabel").textContent = "Play";
   document.getElementById("playIcon").innerHTML = `<path d="M4 2.5L13.5 8L4 13.5V2.5Z"/>`;
 }
 
 function togglePlay() {
   if (playTimer) { stopPlay(); return; }
   if (stepIdx >= SIM.steps.length - 1) stepIdx = 0;
-  document.getElementById("playLabel").textContent = "pause";
+  document.getElementById("playLabel").textContent = "Pause";
   document.getElementById("playIcon").innerHTML = `<rect x="3" y="2.5" width="4" height="11"/><rect x="9" y="2.5" width="4" height="11"/>`;
+  const speed = parseInt(document.getElementById("speedSelect").value, 10) || 800;
   playTimer = setInterval(() => {
     if (stepIdx >= SIM.steps.length - 1) { stopPlay(); return; }
     stepIdx += 1;
     render();
-  }, 900);
+  }, speed);
 }
 
 document.getElementById("generateBtn").addEventListener("click", buildSim);
 document.getElementById("prevBtn").addEventListener("click", () => step(-1));
 document.getElementById("nextBtn").addEventListener("click", () => step(1));
 document.getElementById("playBtn").addEventListener("click", togglePlay);
+
+document.getElementById("stepSlider").addEventListener("input", (e) => {
+  stepIdx = parseInt(e.target.value, 10);
+  render();
+});
 
 document.querySelectorAll(".chip").forEach(btn => {
   btn.addEventListener("click", () => {
@@ -239,8 +332,17 @@ document.querySelectorAll(".chip").forEach(btn => {
   });
 });
 
+document.querySelectorAll(".lang-tab").forEach(tab => {
+  tab.addEventListener("click", () => {
+    document.querySelectorAll(".lang-tab").forEach(t => t.classList.remove("active"));
+    tab.classList.add("active");
+    currentLang = tab.dataset.lang;
+    renderCode();
+  });
+});
+
 document.addEventListener("keydown", e => {
-  if (e.target.tagName === "INPUT") return;
+  if (e.target.tagName === "INPUT" || e.target.tagName === "SELECT") return;
   if (e.key === "ArrowRight") step(1);
   if (e.key === "ArrowLeft") step(-1);
   if (e.key === " ") { e.preventDefault(); togglePlay(); }
